@@ -65,6 +65,7 @@ func handleRequest(conn net.Conn) {
             readCh <- data
         }
         ch <- ""
+        log.Println("conn.Read exit")
     }()
     go func() {
         for {
@@ -78,10 +79,13 @@ func handleRequest(conn net.Conn) {
             writeCh <- data
         }
         ch <- ""
+        log.Println("scon.Read exit")
     }()
     go readPipe(readCh, ch, scon)
     go writePipe(writeCh, ch, conn)
     <-ch
+    ch<-""
+    log.Println("handle request close")
 }
 
 func readPipe(readCh chan []byte, ctrlCh chan string, scon *scp.Conn) {
