@@ -7,6 +7,8 @@ import (
 	"strconv"
     "fmt"
     "os"
+    "net/http"
+    _ "net/http/pprof"
 
 	"github.com/ejoy/goscon/scp"
 )
@@ -19,19 +21,21 @@ func main() {
 	flag.StringVar(&optConnect, "connect", "127.0.0.1:1248", "connect to scon server")
 	flag.Parse()
 
+    go func(){
+        log.Println(http.ListenAndServe("localhost:6060", nil))
+    }()
+
 	l, err := net.Listen("tcp", *host+":"+strconv.Itoa(*port))
 	if err != nil {
 		log.Panicln(err)
 	}
 	log.Println("Listening to connections at '"+*host+"' on port", strconv.Itoa(*port))
 	defer l.Close()
-
 	for {
 		conn, err := l.Accept()
 		if err != nil {
 			log.Panicln(err)
 		}
-
 		go handleRequest(conn)
 	}
 }
@@ -95,6 +99,7 @@ func readPipe(readCh chan []byte, ctrlCh chan string, scon *scp.Conn) {
             scon.Write(data)
         case <-ctrlCh:
             log.Println("readPipe got close")
+            return
         }
     }
 }
@@ -106,6 +111,7 @@ func writePipe(writeCh chan []byte, ctrlCh chan string, conn net.Conn) {
             conn.Write(data)
         case <-ctrlCh:
             log.Println("writePipe got close")
+            return
         }
     }
 }
