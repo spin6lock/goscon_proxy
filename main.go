@@ -65,9 +65,10 @@ func handleRequest(conn net.Conn) {
 				log.Printf("conn read error:%s\n", err.Error())
 				break
 			}
-			data := plaintext_buf[:size]
-			log.Println("Read new data from connection", data)
-			readCh <- data
+			tmp := make([]byte, size)
+			copy(tmp, plaintext_buf)
+			//log.Println("Read new data from connection", tmp)
+			readCh <- tmp
 		}
 		ch <- ""
 		log.Println("conn.Read exit")
@@ -79,9 +80,10 @@ func handleRequest(conn net.Conn) {
 				log.Printf("scon read error:%s\n", err.Error())
 				break
 			}
-			data := scp_buf[:size]
-			log.Println("Read data from scp:", data)
-			writeCh <- data
+			tmp := make([]byte, size)
+			copy(tmp, scp_buf)
+			//log.Println("Read data from scp:", tmp)
+			writeCh <- tmp
 		}
 		ch <- ""
 		log.Println("scon.Read exit")
